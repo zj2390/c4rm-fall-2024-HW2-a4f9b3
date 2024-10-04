@@ -1,0 +1,34 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: My Setup for NumPy
+      id: my-setup-for-numpy
+      uses: classroom-resources/autograding-python-grader@v1
+      with:
+        timeout: 10
+        setup-command: pip install numpy
+    - name: My setup for PyTest
+      id: my-setup-for-pytest
+      uses: classroom-resources/autograding-python-grader@v1
+      with:
+        timeout: 10
+        setup-command: pip install pytest
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        MY-SETUP-FOR-NUMPY_RESULTS: "${{steps.my-setup-for-numpy.outputs.result}}"
+        MY-SETUP-FOR-PYTEST_RESULTS: "${{steps.my-setup-for-pytest.outputs.result}}"
+      with:
+        runners: my-setup-for-numpy,my-setup-for-pytest
